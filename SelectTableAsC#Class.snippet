@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+    <_locDefinition xmlns="urn:locstudio">
+        <_locDefault _loc="locNone" />
+        <_locTag _loc="locData">Title</_locTag>
+        <_locTag _loc="locData">Description</_locTag>
+        <_locTag _loc="locData">Author</_locTag>
+        <_locTag _loc="locData">ToolTip</_locTag>
+    </_locDefinition>
+    <CodeSnippet Format="1.0.0">
+        <Header>
+            <Title>Select table as C# class</Title>
+            <Shortcut></Shortcut>
+            <Description>.</Description>
+            <Author>bgooch</Author>
+            <SnippetTypes>
+                <SnippetType>Expansion</SnippetType>
+            </SnippetTypes>
+        </Header>
+        <Snippet>
+            <Declarations>
+                <Literal>
+                    <ID>DatabaseName</ID>
+                    <ToolTip>Name of the database</ToolTip>
+                    <Default>Database</Default>
+                </Literal>
+                <Literal>
+                    <ID>TableName</ID>
+                    <ToolTip>Name of the table in the database</ToolTip>
+                    <Default>tblSampleTable</Default>
+                </Literal>
+                <Literal>
+                    <ID>SchemaName</ID>
+                    <ToolTip>Name of the schema</ToolTip>
+                    <Default>dbo</Default>
+                </Literal>
+                <Literal>
+                    <ID>Visibility</ID>
+                    <ToolTip>Visibility level of the property.</ToolTip>
+                    <Default>public</Default>
+                </Literal>
+                <Literal>
+                    <ID>Namespace</ID>
+                    <ToolTip>The namespace of the class.</ToolTip>
+                    <Default>eSolutions</Default>
+                </Literal>
+                <Literal>
+                    <ID>ClassName</ID>
+                    <ToolTip>The name of the class.</ToolTip>
+                    <Default>Class1</Default>
+                </Literal>
+            </Declarations>
+            <Code Language="SQL">
+<![CDATA[Use $DatabaseName$
+GO
+
+set nocount on
+
+print 'using System;
+
+namespace $Namespace$
+{
+    public class $ClassName$
+    {
+'
+
+Create Table #T(id int identity(1,1), colorder int, datatype varchar(100), fieldname varchar(200))
+
+Insert #T(colorder, datatype, fieldname)
+
+SELECT colorder, 'int' datatype, c.Name fieldname
+  FROM syscolumns c
+ INNER JOIN systypes t on c.xtype = t.xtype
+ WHERE object_id('$TableName$') = id
+   AND t.Name IN ('tinyint','smallint','int','bigint')
+
+UNION
+
+SELECT colorder, 'DateTime' datatype, c.Name fieldname
+  FROM syscolumns c
+ INNER JOIN systypes t on c.xtype = t.xtype
+ WHERE object_id('$TableName$') = id
+   AND t.Name IN ('smalldatetime','datetime','date','datetime2','time','datetimeoffset')
+
+UNION
+
+SELECT colorder, 'bool' datatype, c.Name fieldname
+  FROM syscolumns c
+ INNER JOIN systypes t on c.xtype = t.xtype
+ WHERE object_id('$TableName$') = id
+   AND t.Name IN ('bit')
+
+UNION
+
+SELECT colorder, 'string' datatype, c.Name fieldname
+  FROM syscolumns c
+ INNER JOIN systypes t on c.xtype = t.xtype
+ WHERE object_id('$TableName$') = id
+   AND t.Name IN ('varchar','char','nvarchar','nchar','text','ntext')
+
+UNION
+
+SELECT colorder, 'double' datatype, c.Name fieldname
+  FROM syscolumns c
+ INNER JOIN systypes t on c.xtype = t.xtype
+ WHERE object_id('$TableName$') = id
+   AND t.Name IN ('real','money','float','decimal','numeric','smallmoney')
+ORDER BY colorder
+
+
+
+
+
+Declare @fieldname varchar(200)
+Declare @datatype varchar(100)
+Declare @ID int
+
+
+Print '
+        #region $Visibility$ Properties
+'
+Set @ID = 0
+Select @ID = MIN(ID) From #T Where ID > @ID
+While @ID IS NOT NULL BEGIN
+    Select @fieldname = fieldname, @datatype = datatype from #T Where ID = @ID
+    
+    Print '
+        $Visibility$ ' + @datatype + ' ' + @fieldname + ' { get; set; }'
+    
+    Select @ID = MIN(ID) From #T Where ID > @ID
+END
+
+print '
+        #endregion $Visibility$ Properties
+    }
+}'
+
+drop table #T
+$end$]]>
+            </Code>
+        </Snippet>
+    </CodeSnippet>
+</CodeSnippets>

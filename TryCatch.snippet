@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets  xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+<_locDefinition xmlns="urn:locstudio">
+    <_locDefault _loc="locNone" />
+    <_locTag _loc="locData">Title</_locTag>
+    <_locTag _loc="locData">Description</_locTag>
+    <_locTag _loc="locData">Author</_locTag>
+    <_locTag _loc="locData">ToolTip</_locTag>
+    <_locTag _loc="locData">Default</_locTag>
+</_locDefinition>
+<CodeSnippet Format="1.0.0">
+    <Header>
+        <Title>TryCatch</Title>
+        <Shortcut></Shortcut>
+        <Description>Surround with Try-Catch.</Description>
+        <Author>SQL Server Books Online Example</Author>
+        <SnippetTypes>
+            <SnippetType>SurroundsWith</SnippetType>
+        </SnippetTypes>
+    </Header>
+    <Snippet>
+        <Declarations>
+            <Literal>
+                <ID>CatchCode</ID>
+                <ToolTip>Add additional code to handle the caught error.</ToolTip>
+                <Default>CatchCode</Default>
+            </Literal>
+        </Declarations>
+        <Code Language="SQL"><![CDATA[
+BEGIN TRY
+
+$selected$ $end$
+
+END TRY
+BEGIN CATCH
+
+/****   $CatchCode$    ****/
+
+        Declare @ErrorMessage varchar(255),
+                @ErrorSeverity int
+
+        Select @ErrorSeverity = error_severity()
+
+        Select @ErrorMessage =
+                          ' Error(' + Cast(Error_Number() as varchar(10)) + '): ' + Error_Message() + char(13) + char(10)
+                        + ' Severity: ' + Cast(@ErrorSeverity as varchar(10)) + char(13) + char(10)
+                        + ' State:    ' + Cast(Error_State() as varchar(10)) + char(13) + char(10)
+                        + ' Procedure: ' + IsNull(Error_Procedure(),'None.')  + char(13) + char(10)
+                        + ' Line #:    ' + Cast(Error_Line() as varchar(10))
+
+        Raiserror( @ErrorMessage, @ErrorSeverity, 2 )
+
+        Return IsNull(error_number(), 0)
+
+END CATCH;
+        ]]>
+        </Code>
+    </Snippet>
+</CodeSnippet>
+</CodeSnippets>

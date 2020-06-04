@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+    <_locDefinition xmlns="urn:locstudio">
+        <_locDefault _loc="locNone" />
+        <_locTag _loc="locData">Title</_locTag>
+        <_locTag _loc="locData">Description</_locTag>
+        <_locTag _loc="locData">Author</_locTag>
+        <_locTag _loc="locData">ToolTip</_locTag>
+    </_locDefinition>
+    <CodeSnippet Format="1.0.0">
+        <Header>
+            <Title>Select columns</Title>
+            <Shortcut></Shortcut>
+            <Description>.</Description>
+            <Author>bgooch</Author>
+            <SnippetTypes>
+                <SnippetType>Expansion</SnippetType>
+            </SnippetTypes>
+        </Header>
+        <Snippet>
+            <Declarations>
+                <Literal>
+                    <ID>DatabaseName</ID>
+                    <ToolTip>Name of the database</ToolTip>
+                    <Default>Database</Default>
+                </Literal>
+                <Literal>
+                    <ID>TableName</ID>
+                    <ToolTip>Name of the table in the database</ToolTip>
+                    <Default>tblSampleTable</Default>
+                </Literal>
+            </Declarations>
+            <Code Language="SQL">
+<![CDATA[Use $DatabaseName$
+GO
+SELECT c.Name + ' AS ' + t.Name AS Field, c.ColOrder
+  FROM syscolumns c
+ INNER JOIN systypes t on c.xtype = t.xtype
+ WHERE object_id('$TableName$') = id
+   AND t.Name NOT IN ('varchar','char','nvarchar','nchar','real','float','decimal','numeric')
+
+UNION
+
+SELECT c.Name + ' AS ' + t.Name + '(' + convert(varchar, c.Length) + ')' AS Field, c.ColOrder
+  FROM syscolumns c
+ INNER JOIN systypes t on c.xtype = t.xtype
+ WHERE object_id('$TableName$') = id
+   AND t.Name IN ('varchar','char','nvarchar','nchar')
+   AND c.Length > 0
+
+UNION
+
+SELECT c.Name + ' AS ' + t.Name + '(max)' AS Field, c.ColOrder
+  FROM syscolumns c
+ INNER JOIN systypes t on c.xtype = t.xtype
+ WHERE object_id('$TableName$') = id
+   AND t.Name IN ('varchar','char','nvarchar','nchar')
+   AND c.Length <= 0
+
+UNION
+
+SELECT c.Name + ' AS ' + t.Name + '(' + convert(varchar, c.xprec) + ',' + convert(varchar, c.xscale) + ')' AS Field, c.ColOrder
+  FROM syscolumns c
+ INNER JOIN systypes t on c.xtype = t.xtype
+ WHERE object_id('$TableName$') = id
+   AND t.Name IN ('decimal','numeric')
+
+UNION
+
+SELECT c.Name + ' AS ' + t.Name + '(' + convert(varchar, c.xprec) + ')' AS Field, c.ColOrder
+  FROM syscolumns c
+ INNER JOIN systypes t on c.xtype = t.xtype
+ WHERE object_id('$TableName$') = id
+   AND t.Name IN ('real','float')
+ORDER BY ColOrder
+$end$]]>
+            </Code>
+        </Snippet>
+	</CodeSnippet>
+</CodeSnippets>
